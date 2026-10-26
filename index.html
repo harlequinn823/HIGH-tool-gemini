@@ -1,0 +1,771 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Technical.ly — How I Got Here Explorer</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,300;0,400;0,600;0,700;0,800;1,400&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              red: '#D72638',
+              darkRed: '#B51B2B',
+              navy: '#1A202C',
+              slate: '#2D3748',
+              lightBg: '#F8FAFC',
+              tagBg: '#EDF2F7',
+              accent: '#0052CC'
+            }
+          },
+          fontFamily: {
+            sans: ['"Public Sans"', 'system-ui', 'sans-serif'],
+            display: ['"Space Grotesk"', 'sans-serif']
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    .line-clamp-3 {
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+  </style>
+</head>
+<body class="bg-brand-lightBg text-brand-navy font-sans antialiased min-h-screen flex flex-col">
+
+  <!-- Top Header / Brand Bar -->
+  <header class="bg-white border-b border-gray-200 sticky top-0 z-30 shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <a href="https://technical.ly/how-i-got-here/" target="_blank" rel="noopener noreferrer" class="flex items-center space-x-2 group">
+          <span class="font-display font-black text-2xl tracking-tighter text-brand-red group-hover:text-brand-darkRed transition">Technical.ly</span>
+          <span class="text-xs uppercase font-bold tracking-widest px-2 py-0.5 rounded bg-brand-red text-white">Series</span>
+        </a>
+        <span class="hidden md:inline-block text-gray-300">/</span>
+        <h1 class="hidden md:inline-block text-lg font-bold text-gray-800">How I Got Here Archive</h1>
+      </div>
+      <div class="flex items-center space-x-4">
+        <button id="savedFilterBtn" onclick="toggleSavedFilter()" class="flex items-center space-x-2 text-sm font-semibold px-3 py-1.5 rounded-lg border border-gray-200 hover:bg-gray-50 transition">
+          <svg class="w-4 h-4 text-brand-red" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"/></svg>
+          <span id="savedCounterLabel">Saved (0)</span>
+        </button>
+        <button onclick="openPitchModal()" class="bg-brand-red hover:bg-brand-darkRed text-white text-sm font-semibold px-4 py-2 rounded-lg transition shadow-sm">
+          + Nominate a Profile
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero & Intro -->
+  <section class="bg-brand-navy text-white py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-4xl mx-auto text-center">
+      <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-brand-tagBg text-xs font-semibold mb-4 tracking-wider uppercase">
+        <span class="w-2 h-2 rounded-full bg-brand-red"></span> Community Career Stories
+      </div>
+      <h2 class="font-display text-3xl sm:text-4xl md:text-5xl font-bold leading-tight">
+        Explore Career Paths Across Local Tech Hubs
+      </h2>
+      <p class="mt-4 text-gray-300 text-base sm:text-lg max-w-2xl mx-auto">
+        Discover how developers, founders, and innovators in Philadelphia, Pittsburgh, DC, Maryland, Louisiana, and North Dakota built their careers.
+      </p>
+
+      <!-- Search Bar -->
+      <div class="mt-8 max-w-2xl mx-auto relative">
+        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+          <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+        </div>
+        <input 
+          id="searchInput"
+          type="text" 
+          placeholder="Search by name, role, background, keyword, company, or skills..." 
+          class="w-full pl-12 pr-4 py-3.5 rounded-xl bg-white text-gray-900 placeholder-gray-400 text-base focus:outline-none focus:ring-4 focus:ring-red-500/30 border border-transparent shadow-lg"
+          oninput="applyFilters()"
+        >
+      </div>
+    </div>
+  </section>
+
+  <!-- Main Content Layout -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 w-full">
+    <!-- Filter Bar -->
+    <div class="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm mb-8 space-y-5">
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-gray-100 pb-4">
+        <div>
+          <h3 class="font-bold text-gray-900 text-base">Filter Stories</h3>
+          <p class="text-xs text-gray-500">Narrow down career pathways across regions, levels, and domains.</p>
+        </div>
+        <button onclick="resetFilters()" class="text-xs font-semibold text-brand-red hover:underline self-start md:self-center">
+          Reset All Filters
+        </button>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <!-- Market Filter -->
+        <div>
+          <label class="block text-xs font-bold uppercase tracking-wider text-gray-600 mb-2">City / State</label>
+          <select id="marketFilter" onchange="applyFilters()" class="w-full bg-gray-50 border border-gray-200 rounded-lg p-2.5 text-sm font-medium text-gray-800 focus:bg-white focus:ring-2 focus:ring-brand-red focus:outline-none">
+            <option value="all">All Markets</option>
+            <option value="Philadelphia">Philadelphia</option>
+            <option value="Pittsburgh">Pittsburgh</option>
+            <option value="DC/NOVA">DC / Northern Virginia</option>
+            <option value="Maryland">Maryland</option>
+            <option value="Louisiana">Louisiana</option>
+            <option value="North Dakota">North Dakota</option>
+          </select>
+        </div>
+
+        <!-- Career Stage Filter -->
+        <div>
+          <label class="block text-xs font-bold uppercase tracking-wider text-gray-600 mb-2">Experience Tier</label>
+          <select id="stageFilter" onchange="applyFilters()" class="w-full bg-gray-50 border border-gray-200 rounded-lg p-2.5 text-sm font-medium text-gray-800 focus:bg-white focus:ring-2 focus:ring-brand-red focus:outline-none">
+            <option value="all">All Career Levels</option>
+            <option value="Junior">Junior / Entry Level</option>
+            <option value="Midlevel">Midlevel</option>
+            <option value="Senior">Senior</option>
+            <option value="Founder">Founder / Executive</option>
+          </select>
+        </div>
+
+        <!-- Profession Filter -->
+        <div>
+          <label class="block text-xs font-bold uppercase tracking-wider text-gray-600 mb-2">Field / Profession</label>
+          <select id="professionFilter" onchange="applyFilters()" class="w-full bg-gray-50 border border-gray-200 rounded-lg p-2.5 text-sm font-medium text-gray-800 focus:bg-white focus:ring-2 focus:ring-brand-red focus:outline-none">
+            <option value="all">All Disciplines</option>
+            <option value="Software Development">Software Development</option>
+            <option value="STEM / Hardware">STEM & Hardware</option>
+            <option value="Data & AI">Data & AI</option>
+            <option value="Product & Design">Product & Design</option>
+            <option value="Cybersecurity">Cybersecurity</option>
+            <option value="BioTech & Health">BioTech & Health</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Active Count & Results Header -->
+    <div class="flex items-center justify-between mb-6">
+      <div class="flex items-center space-x-2">
+        <span class="text-sm font-semibold text-gray-500">Showing:</span>
+        <span id="resultsCount" class="text-sm font-bold bg-gray-200 text-gray-800 px-2 py-0.5 rounded-full">0 profiles</span>
+        <span id="activeSavedBadge" class="hidden text-xs bg-red-100 text-brand-red font-bold px-2 py-0.5 rounded-full">Viewing Bookmarks Only</span>
+      </div>
+      <div class="flex items-center space-x-2 text-xs font-medium text-gray-500">
+        <span>Series Tag:</span>
+        <span class="inline-flex items-center px-2 py-0.5 rounded bg-red-50 text-brand-red font-bold">#How I Got Here</span>
+      </div>
+    </div>
+
+    <!-- Stories Grid -->
+    <div id="storiesGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <!-- Injected via JavaScript -->
+    </div>
+
+    <!-- Empty State -->
+    <div id="emptyState" class="hidden text-center py-16 bg-white rounded-2xl border border-dashed border-gray-300 p-8">
+      <div class="w-16 h-16 mx-auto mb-4 bg-red-50 rounded-full flex items-center justify-center text-brand-red">
+        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+      </div>
+      <h3 class="text-lg font-bold text-gray-800">No stories match your filters</h3>
+      <p class="text-sm text-gray-500 mt-1 max-w-sm mx-auto">Try loosening your search terms, changing regions, or resetting your filter options.</p>
+      <button onclick="resetFilters()" class="mt-4 px-4 py-2 bg-brand-navy text-white text-sm font-semibold rounded-lg hover:bg-gray-800 transition">Reset All Filters</button>
+    </div>
+  </main>
+
+  <!-- Story Detail Modal -->
+  <div id="storyModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4 overflow-y-auto">
+    <div class="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl relative border border-gray-100 my-8">
+      <button onclick="closeStoryModal()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-800 p-2 rounded-full hover:bg-gray-100 transition z-10">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+
+      <div class="p-6 sm:p-8">
+        <div class="flex items-center space-x-2 mb-3">
+          <span id="modalMarket" class="px-2.5 py-1 text-xs font-bold rounded-md bg-red-50 text-brand-red uppercase tracking-wider"></span>
+          <span id="modalStage" class="px-2.5 py-1 text-xs font-bold rounded-md bg-gray-100 text-gray-700 uppercase tracking-wider"></span>
+          <span class="px-2.5 py-1 text-xs font-semibold rounded-md bg-brand-tagBg text-gray-600">How I Got Here</span>
+        </div>
+
+        <h2 id="modalTitle" class="font-display text-2xl sm:text-3xl font-bold text-gray-900 leading-snug"></h2>
+        <p id="modalSubtitle" class="text-brand-red font-semibold text-base mt-1"></p>
+
+        <div class="mt-4 pt-4 border-t border-gray-100 flex items-center justify-between text-xs text-gray-500">
+          <span id="modalDate"></span>
+          <button id="modalSaveBtn" onclick="toggleSaveCurrentModal()" class="flex items-center space-x-1.5 font-bold hover:text-brand-red transition">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"/></svg>
+            <span id="modalSaveText">Save</span>
+          </button>
+        </div>
+
+        <!-- Career Turning Point Section -->
+        <div class="mt-6 bg-slate-50 p-5 rounded-xl border-l-4 border-brand-red">
+          <h4 class="text-xs font-bold uppercase tracking-wider text-gray-500 mb-1">The Pivot / Turning Point</h4>
+          <p id="modalTurningPoint" class="text-sm font-medium text-gray-800 leading-relaxed"></p>
+        </div>
+
+        <!-- Career Milestones Timeline -->
+        <div class="mt-6">
+          <h4 class="text-xs font-bold uppercase tracking-wider text-gray-500 mb-3">Key Milestones Along the Way</h4>
+          <ul id="modalMilestones" class="space-y-3 text-sm text-gray-700"></ul>
+        </div>
+
+        <!-- Advice Section -->
+        <div class="mt-6 bg-amber-50/60 border border-amber-200 p-4 rounded-xl">
+          <h4 class="text-xs font-bold uppercase tracking-wider text-amber-900 mb-1">Advice for Others</h4>
+          <p id="modalAdvice" class="text-sm text-amber-950 italic"></p>
+        </div>
+
+        <!-- Action Links -->
+        <div class="mt-8 pt-4 border-t border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-3">
+          <a id="modalExternalLink" href="https://technical.ly/how-i-got-here/" target="_blank" rel="noopener noreferrer" class="w-full sm:w-auto text-center px-5 py-2.5 bg-brand-navy hover:bg-black text-white text-sm font-bold rounded-lg transition inline-flex items-center justify-center gap-2">
+            Read Full Article on Technical.ly
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+          </a>
+          <button onclick="closeStoryModal()" class="w-full sm:w-auto px-4 py-2.5 text-sm font-semibold text-gray-600 hover:text-gray-900">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Nominate / Pitch Modal -->
+  <div id="pitchModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
+    <div class="bg-white rounded-2xl max-w-lg w-full p-6 sm:p-8 shadow-2xl relative">
+      <button onclick="closePitchModal()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-800 p-2">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+      <h3 class="font-display text-xl font-bold text-gray-900">Nominate for "How I Got Here"</h3>
+      <p class="text-xs text-gray-500 mt-1">Know someone in Philadelphia, Pittsburgh, DC, Maryland, Louisiana, or North Dakota with a unique career story?</p>
+      
+      <form onsubmit="handlePitchSubmit(event)" class="mt-4 space-y-4">
+        <div>
+          <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Nominee Name</label>
+          <input type="text" required placeholder="Jane Doe" class="w-full border border-gray-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-brand-red focus:outline-none">
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Market</label>
+            <select required class="w-full border border-gray-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-brand-red focus:outline-none">
+              <option value="Philadelphia">Philadelphia</option>
+              <option value="Pittsburgh">Pittsburgh</option>
+              <option value="DC/NOVA">DC/NOVA</option>
+              <option value="Maryland">Maryland</option>
+              <option value="Louisiana">Louisiana</option>
+              <option value="North Dakota">North Dakota</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Field</label>
+            <input type="text" required placeholder="e.g. Software Dev" class="w-full border border-gray-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-brand-red focus:outline-none">
+          </div>
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Why should we feature their journey?</label>
+          <textarea rows="3" required placeholder="Switched careers from teaching to cybersecurity..." class="w-full border border-gray-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-brand-red focus:outline-none"></textarea>
+        </div>
+        <button type="submit" class="w-full py-3 bg-brand-red hover:bg-brand-darkRed text-white text-sm font-bold rounded-lg transition shadow">Submit Nomination</button>
+      </form>
+    </div>
+  </div>
+
+  <footer class="bg-white border-t border-gray-200 py-6 text-center text-xs text-gray-500">
+    <p>Independent directory prototype for <a href="https://technical.ly/how-i-got-here/" class="text-brand-red hover:underline font-bold" target="_blank" rel="noopener noreferrer">Technical.ly's How I Got Here</a> series.</p>
+  </footer>
+
+  <script>
+    // Story Data Archive
+    const STORIES = [
+      {
+        id: 1,
+        name: "Marcus Vance",
+        role: "Senior Full Stack Engineer",
+        company: "Vanguard Tech Innovation",
+        market: "Philadelphia",
+        stage: "Senior",
+        profession: "Software Development",
+        date: "October 2024",
+        summary: "From high school biology teacher to distributed systems lead after discovering automated grading scripts in Python.",
+        turningPoint: "Realized that building grading automation tools excited him far more than writing lesson plans, leading him to an evening boot camp and contributing to civic open source.",
+        milestones: [
+          "Began coding by automating quiz grading for 120 high school biology students.",
+          "Completed a 16-week local Philadelphia coding bootcamp while teaching during the day.",
+          "Hired as an apprentice developer at a Center City logistics startup.",
+          "Promoted to Senior Engineer leading architecture migrations for financial apps."
+        ],
+        advice: "Don't hide your non-tech background. Translating complex biology concepts to students is identical to explaining system architecture to product managers."
+      },
+      {
+        id: 2,
+        name: "Amina Al-Mansoor",
+        role: "Robotics Perception Lead",
+        company: "RoboCarnegie Systems",
+        market: "Pittsburgh",
+        stage: "Senior",
+        profession: "STEM / Hardware",
+        date: "September 2024",
+        summary: "Leveraging CMU research into commercial lidar pipeline architecture for autonomous freight vehicles in western PA.",
+        turningPoint: "Working on a university off-road rover team convinced her that hardware-software synchronization was where the biggest real-world engineering hurdles lay.",
+        milestones: [
+          "Built telemetry sensors for student racing vehicles in undergrad.",
+          "Relocated to Pittsburgh to join a research incubator in the Robotics Row corridor.",
+          "Transitioned into industrial heavy-machinery autonomous perception.",
+          "Leading a team of 8 perception and computer vision engineers."
+        ],
+        advice: "Work on physical machines early. Seeing code fail because of a lens glare or motor vibration makes you a 10x better engineer."
+      },
+      {
+        id: 3,
+        name: "Devon Chen",
+        role: "Cloud Security Architect",
+        company: "Federal Civic Solutions",
+        market: "DC/NOVA",
+        stage: "Midlevel",
+        profession: "Cybersecurity",
+        date: "August 2024",
+        summary: "Navigating military communications transition into FedRAMP zero-trust security engineering across federal agencies.",
+        turningPoint: "During a deployment, a configuration flaw in an encrypted radio network made him realize how vulnerable interconnected digital pipelines were without zero-trust fundamentals.",
+        milestones: [
+          "Served 4 years as a military communications specialist.",
+          "Leveraged GI Bill and local DC tech cohorts to earn CompTIA Security+ and AWS Solutions Architect certs.",
+          "Joined a Northern Virginia consultancy as a junior cloud analyst.",
+          "Now designs multi-region zero-trust access boundaries for public sector clients."
+        ],
+        advice: "Certifications get your resume looked at in the DC corridor, but having a working lab you can talk about in detail gets you the offer."
+      },
+      {
+        id: 4,
+        name: "Kendra Washington",
+        role: "Clinical Informatics Engineer",
+        company: "Johns Hopkins Tech Ventures spinout",
+        market: "Maryland",
+        stage: "Midlevel",
+        profession: "BioTech & Health",
+        date: "November 2024",
+        summary: "Former registered nurse who shifted into EHR database optimization and real-time clinical trial data pipelines in Baltimore.",
+        turningPoint: "Frustration with an unintuitive electronic health record system during 12-hour shifts drove her to take SQL courses to fix clinical workflow bottlenecks.",
+        milestones: [
+          "6 years of bedside nursing experience in critical care.",
+          "Enrolled in a healthcare data analytics certificate program in Baltimore.",
+          "Joined an EHR optimization committee as the clinical liaison.",
+          "Transitioned full-time to clinical informatics, bridging medical staff with engineering."
+        ],
+        advice: "Domain empathy is irreplaceable. Having lived the frustration of the end-user gives you a massive advantage when designing software."
+      },
+      {
+        id: 5,
+        name: "Jean-Paul 'JP' Boudreaux",
+        role: "Co-Founder & CEO",
+        company: "DeltaSensor Climate",
+        market: "Louisiana",
+        stage: "Founder",
+        profession: "STEM / Hardware",
+        date: "July 2024",
+        summary: "Created flood-monitoring IoT grids across coastal waterways after surviving three consecutive major hurricane seasons.",
+        turningPoint: "Recognized that local municipal emergency response teams were relying on slow, manual gauge checks during severe storm surges.",
+        milestones: [
+          "Tinkered with Arduino microcontrollers and solar panels in a New Orleans garage.",
+          "Partnered with an environmental science researcher at Tulane.",
+          "Won seed funding through regional Gulf Coast startup pitch competitions.",
+          "Deployed over 250 real-time water monitoring units across southeastern Louisiana."
+        ],
+        advice: "Solve problems that are literally outside your front door. Local relevance provides the strongest fuel for founder resilience."
+      },
+      {
+        id: 6,
+        name: "Sarah Lindqvist",
+        role: "Junior Machine Learning Specialist",
+        company: "Prairie Harvest AI",
+        market: "North Dakota",
+        stage: "Junior",
+        profession: "Data & AI",
+        date: "October 2024",
+        summary: "Self-taught developer from Fargo building predictive crop yield algorithms and hyperspectral satellite imaging pipelines.",
+        turningPoint: "Attending a local Hack Fargo weekend meetup showed her that modern agriculture runs on massive computer vision and ML datasets.",
+        milestones: [
+          "Completed free online Python and Linear Algebra courses after work.",
+          "Won 2nd place at a Grand Forks AgTech hackathon with an open satellite data project.",
+          "Accepted a junior apprenticeship role at a Fargo precision-ag startup.",
+          "Shipped her first production model predicting regional soil moisture index."
+        ],
+        advice: "You don't need to be in Silicon Valley to work on bleeding-edge AI. The Heartland has immense, under-analyzed real-world datasets."
+      },
+      {
+        id: 7,
+        name: "Tariq Mitchell",
+        role: "Associate Frontend Developer",
+        company: "Philly Urban Tech Collective",
+        market: "Philadelphia",
+        stage: "Junior",
+        profession: "Software Development",
+        date: "August 2024",
+        summary: "Graduated from a community college web development cohort, now building responsive portals for municipal civic services.",
+        turningPoint: "Built a free community pantry finder web page for his neighborhood in West Philly that saw over 10,000 visitors in its first month.",
+        milestones: [
+          "Completed an Associate's in Computer Science at Community College of Philadelphia.",
+          "Mentored through a local Philly tech meet-up group.",
+          "Interned with a public sector design agency in Center City.",
+          "Hired full-time as an Associate Frontend Developer building React apps."
+        ],
+        advice: "Build things people in your immediate neighborhood can actually click on and use. Portfolio projects with real users stand out immediately."
+      },
+      {
+        id: 8,
+        name: "Elena Rostova",
+        role: "Founder & CTO",
+        company: "SteelAlloy Analytics",
+        market: "Pittsburgh",
+        stage: "Founder",
+        profession: "Data & AI",
+        date: "June 2024",
+        summary: "Transitioned from industrial metallurgy into deep learning, automating defect detection in specialty steel mills.",
+        turningPoint: "Witnessing millions of dollars in scrapped steel due to manual acoustic checks made her build an audio machine learning model prototype.",
+        milestones: [
+          "Worked 8 years as a materials scientist in traditional manufacturing.",
+          "Completed a master's in applied computational data science at Pitt.",
+          "Secured angel backing from regional manufacturing veterans.",
+          "Scaled acoustic sensor deployment to 14 industrial manufacturing plants."
+        ],
+        advice: "Deep domain knowledge plus modern software is an unbeatable combination for a founder."
+      },
+      {
+        id: 9,
+        name: "Damian Ortiz",
+        role: "Staff Platform Engineer",
+        company: "CivicStream Cloud",
+        market: "DC/NOVA",
+        stage: "Senior",
+        profession: "Software Development",
+        date: "July 2024",
+        summary: "Ten years orchestrating Kubernetes microservices for high-traffic public transparency and FOIA tracking platforms.",
+        turningPoint: "Being called in on a 2 AM emergency outage for a high-traffic federal health site made him obsessive about automated observability and immutable infrastructure.",
+        milestones: [
+          "Started as a Linux systems administrator in Rockville, MD.",
+          "Transitioned to DevOps during early Docker adoption cycles.",
+          "Architected resilient multi-region infrastructure handling millions of daily records.",
+          "Now mentors junior infrastructure engineers across DC tech communities."
+        ],
+        advice: "Master the command line and networking fundamentals. Frameworks change every three years, but TCP/IP and Unix systems stay constant."
+      },
+      {
+        id: 10,
+        name: "Chloe Henderson",
+        role: "Senior Product Designer",
+        company: "Charm City Health Design",
+        market: "Maryland",
+        stage: "Senior",
+        profession: "Product & Design",
+        date: "May 2024",
+        summary: "Fine arts graduate who reshaped UX for accessibility-first patient portals throughout the Mid-Atlantic healthcare region.",
+        turningPoint: "Volunteered to redesign a non-profit clinic's appointment booking form and watched patient no-show rates drop by 35%.",
+        milestones: [
+          "Graduated with a degree in Graphic Design from MICA in Baltimore.",
+          "Transitioned into human-computer interaction design through agency work.",
+          "Specialized in WCAG AAA accessibility compliance for health portals.",
+          "Currently leads design systems for an ecosystem of 40+ healthcare clinics."
+        ],
+        advice: "Accessibility is not a checklist item at the end of a sprint; it is the foundation of empathetic product architecture."
+      },
+      {
+        id: 11,
+        name: "Jacques Moreau",
+        role: "Midlevel Backend Engineer",
+        company: "Bayou FinTech Hub",
+        market: "Louisiana",
+        stage: "Midlevel",
+        profession: "Software Development",
+        date: "September 2024",
+        summary: "Self-taught Go developer building microservices for disaster relief funding distribution and micro-lending.",
+        turningPoint: "Spent years as an accountant before discovering that scriptable transaction validation could eliminate hours of manual audit reconciliation.",
+        milestones: [
+          "Automated ledger auditing scripts using Python.",
+          "Contributed to open source Go microservice libraries.",
+          "Hired as junior backend developer at a New Orleans financial tech startup.",
+          "Now owns the payment routing pipeline and audit compliance systems."
+        ],
+        advice: "Understand the financial and operational mechanics of the business you are writing code for. Developers who understand the balance sheet are invaluable."
+      },
+      {
+        id: 12,
+        name: "Brent Haugen",
+        role: "Founder & Drone Operations Lead",
+        company: "Dakota Precision Ag",
+        market: "North Dakota",
+        stage: "Founder",
+        profession: "STEM / Hardware",
+        date: "April 2024",
+        summary: "Fourth-generation farmer who integrated autonomous drone imaging fleets for multi-thousand-acre sugar beet and wheat farms.",
+        turningPoint: "Realized that hiring crop-dusting planes for infrared vegetation index surveying was taking too long and costing farmers thousands unnecessarily.",
+        milestones: [
+          "Earned FAA Part 107 commercial drone pilot license.",
+          "Built custom multispectral camera rigs mounted onto commercial quadcopters.",
+          "Launched contract mapping services for Red River Valley agricultural growers.",
+          "Scaled to a fleet of autonomous base-station drones covering 60,000 acres."
+        ],
+        advice: "Don't abandon your roots. The best tech companies are founded by people who understand traditional legacy industries from the inside out."
+      }
+    ];
+
+    // State Management
+    let savedArticleIds = JSON.parse(localStorage.getItem('tech_ly_saved_ids') || '[]');
+    let showSavedOnly = false;
+    let currentActiveModalId = null;
+
+    // Initialization
+    document.addEventListener('DOMContentLoaded', () => {
+      updateSavedCounter();
+      applyFilters();
+    });
+
+    // Render Function
+    function applyFilters() {
+      const searchVal = document.getElementById('searchInput').value.toLowerCase().trim();
+      const marketVal = document.getElementById('marketFilter').value;
+      const stageVal = document.getElementById('stageFilter').value;
+      const professionVal = document.getElementById('professionFilter').value;
+
+      const filtered = STORIES.filter(story => {
+        // Saved toggle filter
+        if (showSavedOnly && !savedArticleIds.includes(story.id)) {
+          return false;
+        }
+
+        // Market filter
+        if (marketVal !== 'all' && story.market !== marketVal) {
+          return false;
+        }
+
+        // Stage filter
+        if (stageVal !== 'all' && story.stage !== stageVal) {
+          return false;
+        }
+
+        // Profession filter
+        if (professionVal !== 'all' && story.profession !== professionVal) {
+          return false;
+        }
+
+        // Search text filter
+        if (searchVal) {
+          const searchPayload = `${story.name} ${story.role} ${story.company} ${story.summary} ${story.market} ${story.turningPoint} ${story.advice} ${story.profession}`.toLowerCase();
+          if (!searchPayload.includes(searchVal)) {
+            return false;
+          }
+        }
+
+        return true;
+      });
+
+      renderGrid(filtered);
+    }
+
+    function renderGrid(stories) {
+      const grid = document.getElementById('storiesGrid');
+      const emptyState = document.getElementById('emptyState');
+      const counter = document.getElementById('resultsCount');
+
+      counter.textContent = `${stories.length} ${stories.length === 1 ? 'profile' : 'profiles'}`;
+
+      if (stories.length === 0) {
+        grid.innerHTML = '';
+        emptyState.classList.remove('hidden');
+        return;
+      }
+
+      emptyState.classList.add('hidden');
+
+      grid.innerHTML = stories.map(story => {
+        const isSaved = savedArticleIds.includes(story.id);
+        return `
+          <div class="bg-white rounded-2xl border border-gray-200 hover:border-gray-300 hover:shadow-xl transition-all duration-200 flex flex-col justify-between overflow-hidden group">
+            <div class="p-6">
+              <!-- Top Badges & Bookmark -->
+              <div class="flex items-center justify-between gap-2 mb-3">
+                <div class="flex flex-wrap gap-1.5 items-center">
+                  <span class="px-2.5 py-0.5 text-xs font-bold rounded bg-red-50 text-brand-red uppercase tracking-wider">${escapeHtml(story.market)}</span>
+                  <span class="px-2 py-0.5 text-xs font-semibold rounded bg-gray-100 text-gray-700">${escapeHtml(story.stage)}</span>
+                </div>
+                <button onclick="toggleSave(${story.id}, event)" title="${isSaved ? 'Remove Bookmark' : 'Save Story'}" class="text-gray-400 hover:text-brand-red p-1 rounded transition">
+                  <svg class="w-5 h-5 ${isSaved ? 'text-brand-red fill-current' : ''}" fill="${isSaved ? 'currentColor' : 'none'}" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"/>
+                  </svg>
+                </button>
+              </div>
+
+              <!-- Title & Role -->
+              <h3 class="font-display font-bold text-xl text-gray-900 group-hover:text-brand-red transition line-clamp-1">${escapeHtml(story.name)}</h3>
+              <p class="text-sm font-semibold text-gray-700 mt-0.5">${escapeHtml(story.role)}</p>
+              <p class="text-xs text-gray-500 mb-3">${escapeHtml(story.company)}</p>
+
+              <!-- Discipline Tag -->
+              <div class="mb-3">
+                <span class="inline-block text-xs font-medium text-brand-slate bg-slate-100 px-2 py-0.5 rounded">
+                  ${escapeHtml(story.profession)}
+                </span>
+              </div>
+
+              <!-- Excerpt -->
+              <p class="text-xs text-gray-600 line-clamp-3 leading-relaxed mb-4">
+                "${escapeHtml(story.summary)}"
+              </p>
+            </div>
+
+            <!-- Card Bottom Bar -->
+            <div class="px-6 py-4 bg-gray-50/80 border-t border-gray-100 flex items-center justify-between text-xs">
+              <span class="text-gray-600 font-semibold">#How I Got Here</span>
+              <button onclick="openStoryModal(${story.id})" class="font-bold text-brand-red hover:text-brand-darkRed transition flex items-center gap-1">
+                View Journey
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // Modal Control
+    function openStoryModal(id) {
+      const story = STORIES.find(s => s.id === id);
+      if (!story) return;
+
+      currentActiveModalId = id;
+      document.getElementById('modalMarket').textContent = story.market;
+      document.getElementById('modalStage').textContent = story.stage;
+      document.getElementById('modalTitle').textContent = `${story.name} — ${story.role}`;
+      document.getElementById('modalSubtitle').textContent = `@ ${story.company} (${story.profession})`;
+      document.getElementById('modalDate').textContent = `Featured in Technical.ly • ${story.date}`;
+      document.getElementById('modalTurningPoint').textContent = story.turningPoint;
+      document.getElementById('modalAdvice').textContent = `"${story.advice}"`;
+
+      const milestonesEl = document.getElementById('modalMilestones');
+      milestonesEl.innerHTML = story.milestones.map(m => `
+        <li class="flex items-start gap-2.5">
+          <span class="w-2 h-2 rounded-full bg-brand-red mt-1.5 flex-shrink-0"></span>
+          <span>${escapeHtml(m)}</span>
+        </li>
+      `).join('');
+
+      updateModalSaveButton();
+      document.getElementById('storyModal').classList.remove('hidden');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeStoryModal() {
+      document.getElementById('storyModal').classList.add('hidden');
+      document.body.style.overflow = '';
+      currentActiveModalId = null;
+    }
+
+    function toggleSaveCurrentModal() {
+      if (currentActiveModalId !== null) {
+        toggleSave(currentActiveModalId);
+        updateModalSaveButton();
+      }
+    }
+
+    function updateModalSaveButton() {
+      if (currentActiveModalId === null) return;
+      const isSaved = savedArticleIds.includes(currentActiveModalId);
+      const textEl = document.getElementById('modalSaveText');
+      textEl.textContent = isSaved ? 'Saved in Bookmarks' : 'Save Story';
+    }
+
+    // Bookmarking Logic
+    function toggleSave(id, event) {
+      if (event) event.stopPropagation();
+
+      const index = savedArticleIds.indexOf(id);
+      if (index > -1) {
+        savedArticleIds.splice(index, 1);
+      } else {
+        savedArticleIds.push(id);
+      }
+
+      localStorage.setItem('tech_ly_saved_ids', JSON.stringify(savedArticleIds));
+      updateSavedCounter();
+      applyFilters();
+    }
+
+    function updateSavedCounter() {
+      document.getElementById('savedCounterLabel').textContent = `Saved (${savedArticleIds.length})`;
+    }
+
+    function toggleSavedFilter() {
+      showSavedOnly = !showSavedOnly;
+      const btn = document.getElementById('savedFilterBtn');
+      const badge = document.getElementById('activeSavedBadge');
+
+      if (showSavedOnly) {
+        btn.classList.add('bg-brand-red', 'text-white', 'border-brand-red');
+        btn.classList.remove('text-gray-700', 'bg-white');
+        badge.classList.remove('hidden');
+      } else {
+        btn.classList.remove('bg-brand-red', 'text-white', 'border-brand-red');
+        badge.classList.add('hidden');
+      }
+      applyFilters();
+    }
+
+    // Reset Filters
+    function resetFilters() {
+      document.getElementById('searchInput').value = '';
+      document.getElementById('marketFilter').value = 'all';
+      document.getElementById('stageFilter').value = 'all';
+      document.getElementById('professionFilter').value = 'all';
+      showSavedOnly = false;
+
+      const btn = document.getElementById('savedFilterBtn');
+      btn.classList.remove('bg-brand-red', 'text-white', 'border-brand-red');
+      document.getElementById('activeSavedBadge').classList.add('hidden');
+
+      applyFilters();
+    }
+
+    // Nominate Modal
+    function openPitchModal() {
+      document.getElementById('pitchModal').classList.remove('hidden');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closePitchModal() {
+      document.getElementById('pitchModal').classList.add('hidden');
+      document.body.style.overflow = '';
+    }
+
+    function handlePitchSubmit(e) {
+      e.preventDefault();
+      alert('Thank you! Your nomination for the How I Got Here series has been logged.');
+      closePitchModal();
+      e.target.reset();
+    }
+
+    // Utility escape
+    function escapeHtml(text) {
+      if (!text) return '';
+      return text.replace(/[&<>"']/g, function(m) {
+        return {
+          '&': '&amp;',
+          '<': '&lt;',
+          '>': '&gt;',
+          '"': '&quot;',
+          "'": '&#039;'
+        }[m];
+      });
+    }
+
+    // Close modals on escape key
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        closeStoryModal();
+        closePitchModal();
+      }
+    });
+  </script>
+</body>
+</html>
